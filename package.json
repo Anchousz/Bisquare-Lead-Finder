@@ -1,0 +1,62 @@
+{
+  "name": "bisquare-lead-finder",
+  "productName": "Bisquare Lead Finder",
+  "version": "2.1.1",
+  "description": "Bisquare Lead Finder — десктоп-приложение для поиска клиентов веб-студии",
+  "main": "electron-main.js",
+  "author": "Bisquare",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "prepare-build": "node tools/prepare-build.js",
+    "dist": "node tools/prepare-build.js && electron-builder --win nsis",
+    "dist:dir": "node tools/prepare-build.js && electron-builder --win dir"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "ru.bisquare.leadfinder",
+    "productName": "Bisquare Lead Finder",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build-assets"
+    },
+    "files": [
+      "electron-main.js",
+      "killswitch.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/python",
+        "to": "python"
+      },
+      {
+        "from": "build/pysrc",
+        "to": "pysrc"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Bisquare-Lead-Finder-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Bisquare Lead Finder",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "_комментарий": "Образец настроек. Реальный config.json создаётся приложением и в git не попадает (см. .gitignore) — в нём лежат ключи.",
+  "cities": "Казань",
+  "rubrics_filter": "",
+  "exclude": "сеть, франшиза",
+  "sources": ["2gis", "osm"],
+  "gis_api_key": "",
+  "yandex_api_key": "",
+  "vk_token": "",
+  "max_leads": 2000,
+  "max_pages": 10,
+  "api_budget": 800,
+  "min_score": 40,
+  "analyze_sites": true,
+  "concurrency": 3,
+  "headless": true,
+  "pagespeed_key": "",
+  "proxies": "",
+  "cleanup_on_finish": false
+}

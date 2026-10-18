@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>Bisquare · Lead Finder</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- ЭКРАН ВХОДА. Показывается, пока сервер не подтвердил доступ: без него
+     приложение не работает и данных в нём нет. -->
+<div class="gate hidden" id="gate">
+  <form class="gate-box" id="gateForm" autocomplete="off">
+    <div class="gate-brand"><b>BISQUARE</b> · LEAD FINDER</div>
+    <div class="gate-sub" id="gateSub">Вход по рабочей учётной записи</div>
+
+    <label class="fld" for="g_login">Логин<input id="g_login" type="text" autocomplete="username"></label>
+    <label class="fld" for="g_pass">Пароль<input id="g_pass" type="password" autocomplete="current-password"></label>
+
+    <button class="gate-btn" type="submit" id="gateBtn">Войти</button>
+    <div class="gate-msg" id="gateMsg"></div>
+  </form>
+</div>
+
+<!-- ЭКРАН БЛОКИРОВКИ: доступ приостановлен или отозван владельцем. -->
+<div class="gate hidden" id="blocked">
+  <div class="gate-box">
+    <div class="gate-brand"><b>BISQUARE</b> · LEAD FINDER</div>
+    <div class="blocked-title" id="blockedTitle">Работа приостановлена</div>
+    <div class="blocked-note" id="blockedNote"></div>
+    <button class="gate-btn ghost" id="blockedRetry" type="button">Проверить снова</button>
+  </div>
+</div>
+
+<div class="window" id="window">
+
+  <!-- ТИТУЛБАР -->
+  <div class="titlebar">
+    <div class="tbrand"><b>BISQUARE</b> · LEAD FINDER</div>
+    <div class="tspacer"></div>
+    <span class="tstate" id="tstate"></span>
+    <button class="tlogout hidden" id="tlogout" type="button" title="Выйти из учётной записи">Выйти</button>
+    <span class="tbrand" id="runWord">IDLE</span>
+  </div>
+
+  <!-- ТУЛБАР -->
+  <div class="toolbar">
+    <div class="search"><span>⌕</span><input id="search" type="text" placeholder="Поиск лида…"></div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-view="all">Все <b id="c_all">0</b></button>
+      <button class="tab" data-view="fav">Избранные <b id="c_fav">0</b></button>
+      <button class="tab" data-view="unchecked">Не проверено <b id="c_unchecked">0</b></button>
+      <button class="tab" data-view="deleted">Корзина <b id="c_deleted">0</b></button>
+    </nav>
+    <div class="knob" id="knob" title="Запуск / остановка сбора">
+      <svg class="knob-progress" width="78" height="78" viewBox="0 0 78 78">
+        <circle class="ring-bg" cx="39" cy="39" r="34" fill="none" stroke-width="2"></circle>
+        <circle class="ring-fg" id="knobArc" cx="39" cy="39" r="34" fill="none" stroke-width="2"
+                stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"></circle>
+      </svg>
+      <svg class="knob-spin" width="78" height="78" viewBox="0 0 78 78">
+        <circle cx="39" cy="39" r="34" fill="none" stroke-width="2" stroke-linecap="round" stroke-dasharray="26 188"></circle>
+      </svg>
+      <div class="center" id="knobCenter">▶</div>
+    </div>
+  </div>
+
+  <!-- ТЕЛО -->
+  <div class="content">
+    <main class="stage">
+      <div class="stagehead">
+        <div class="stitle" id="stageTitle">LEADS · <b>—</b></div>
+        <div class="listctl">
+          <select id="statusFilter" class="sel" aria-label="Статус"
+                  title="hot — сайт нужен срочно (скор >60); warm — нужен, но не горит (40–60); cold — у бизнеса всё ок или это не клиент (<40)">
+            <option value="">все статусы</option>
+            <option value="hot">hot</option>
+            <option value="warm">warm</option>
+            <option value="cold">cold</option>
+          </select>
+          <select id="showFilter" class="sel" aria-label="Показать" title="Способ связи или статус звонка">
+            <option value="">все контакты</option>
+            <optgroup label="Связь">
+              <option value="has_phone">есть номер</option>
+              <option value="has_messengers">есть мессенджер</option>
+              <option value="has_socials">есть соцсети</option>
+              <option value="has_email">есть email</option>
+              <option value="has_site">есть сайт</option>
+              <option value="no_site">нет сайта</option>
+            </optgroup>
+            <optgroup label="Звонок">
+              <option value="call_new">не звонили</option>
+              <option value="call_progress">в работе</option>
+              <option value="call_back">перезвонить / недозвон</option>
+              <option value="call_deal">согласились</option>
+            </optgroup>
+          </select>
+          <select id="minScore" class="sel" aria-label="Скор от" title="Скрыть лидов с оценкой ниже">
+            <option value="0">скор: любой</option>
+            <option value="20">скор от 20</option>
+            <option value="40">скор от 40</option>
+            <option value="60">скор от 60</option>
+            <option value="80">скор от 80</option>
+          </select>
+          <select id="sortBy" class="sel" aria-label="Сортировка">
+            <option value="score">скор</option>
+            <option value="name">имя</option>
+            <option value="city">город</option>
+            <option value="rating">рейтинг</option>
+            <option value="reviews">отзывы</option>
+            <option value="date">дата</option>
+          </select>
+          <button id="sortDir" class="dirbtn" title="Направление">▼</button>
+        </div>
+      </div>
+
+      <div id="leads" class="leads"></div>
+
+      <section class="view hidden" id="view-calendar" aria-label="Календарь"></section>
+      <section class="view hidden" id="view-crm" aria-label="CRM"></section>
+
+      <div class="stagefoot">
+        <span class="footinfo" id="footInfo">—</span>
+        <div class="pager" id="pager">
+          <button class="pnav" id="prev" title="Предыдущая страница (←)">‹</button>
+          <div class="pnums" id="pnums"></div>
+          <button class="pnav" id="next" title="Следующая страница (→)">›</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ПРАВОЕ МЕНЮ -->
+    <aside class="rail" id="rail">
+      <div class="rail-title"><span>Main menu</span></div>
+      <button class="rItem" data-panel="database"><i>▤</i> Database <b>+</b></button>
+      <button class="rItem" data-panel="settings"><i>⚙</i> Settings <b>→</b></button>
+      <button class="rItem" data-panel="notifications"><i>◔</i> Notifications <b>»</b></button>
+      <!-- Разделы внутри окна: заменяют список лидов, «‹ Лиды» возвращает назад -->
+      <button class="rItem" data-section="calendar" id="railCal"><i>▦</i> Calendar <b>›</b></button>
+      <button class="rItem hidden" data-section="crm" id="railCrm"><i>₽</i> CRM <b>›</b></button>
+      <div class="spacer"></div>
+      <div class="darkmode" id="dmToggle">
+        <span class="moon">☾</span>
+        <div class="dm-t">select option:<b>DARK MODE <u id="dmState">ON</u></b></div>
+      </div>
+    </aside>
+  </div>
+
+</div>
+
+<!-- ЗАТЕМНЕНИЕ + ПАНЕЛИ (только одна активна) -->
+<div class="scrim" id="scrim"></div>
+
+<section class="panel" id="panel-settings">
+  <div class="panel-head"><h3>⚙ Настройки сбора</h3><button class="closex" data-close>✕</button></div>
+  <div class="panel-body">
+    <label class="fld">Города <em>(по одному в строке — собираем всех)</em>
+      <textarea id="cities" rows="2" placeholder="Казань"></textarea></label>
+    <div class="fld">Источники <em>(живая сеть — можно несколько сразу; дубли склеиваются)</em>
+      <div class="srcs" id="sources">
+        <label class="src"><input type="checkbox" data-src="2gis"><span>2ГИС</span></label>
+        <label class="src"><input type="checkbox" data-src="osm"><span>OSM · без ключа</span></label>
+        <label class="src"><input type="checkbox" data-src="yandex"><span>Яндекс.Карты</span></label>
+        <label class="src"><input type="checkbox" data-src="vk"><span>ВКонтакте</span></label>
+      </div>
+    </div>
+    <div class="phint hidden" id="keysNote"></div>
+    <label class="fld keyf" data-key="2gis">Ключ 2ГИС Catalog API <em>(для «2ГИС», dev.2gis.com)</em>
+      <input id="gis_api_key" type="text" placeholder="вставь ключ"><small class="khint"></small></label>
+    <label class="fld keyf" data-key="yandex">Ключ Яндекс Search API <em>(для «Яндекс», developer.tech.yandex.ru)</em>
+      <input id="yandex_api_key" type="text" placeholder="apikey"><small class="khint"></small></label>
+    <label class="fld keyf" data-key="vk">Токен VK API <em>(для «ВК», access_token)</em>
+      <input id="vk_token" type="text" placeholder="vk1.a…"><small class="khint"></small></label>
+    <label class="fld keyf" data-key="pagespeed">Ключ Google PageSpeed <em>(проверка сайтов лидов: открывается ли, https, адаптив, скорость)</em>
+      <input id="pagespeed_key" type="text" placeholder="вставь ключ"><small class="khint"></small></label>
+    <div class="grid2">
+      <label class="fld">Макс. лидов<input id="max_leads" type="number" value="2000"></label>
+      <label class="fld">Страниц/рубрику ×10<input id="max_pages" type="number" value="10"></label>
+    </div>
+    <label class="fld">Бюджет запросов 2ГИС за прогон <em>(free-тариф ≈ 1000 запросов В МЕСЯЦ, и даже пустой 404 списывается — держи запас)</em>
+      <input id="api_budget" type="number" value="800"></label>
+    <label class="fld">Ограничить сферами <em>(через запятую, пусто = все)</em>
+      <input id="rubrics_filter" type="text" placeholder="стоматолог, автосервис"></label>
+    <label class="fld chk"><input id="analyze_sites" type="checkbox" checked>
+      <span>Проверять сайты лидов (браузером, а без него — через PageSpeed)</span></label>
+    <label class="fld">Сайтов проверять одновременно<input id="concurrency" type="number" value="3"></label>
+    <details class="fld"><summary style="cursor:pointer">Ещё настройки</summary>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+        <label class="fld">Слова-исключения<input id="exclude" type="text" placeholder="сеть, франшиза"></label>
+        <label class="fld">Прокси <em>(по одному в строке)</em><textarea id="proxies" rows="2"></textarea></label>
+        <label class="fld">Папка экспорта<input id="out_dir" type="text"></label>
+        <label class="fld chk"><input id="headless" type="checkbox" checked><span>Headless (без окон)</span></label>
+        <label class="fld chk"><input id="cleanup_on_finish" type="checkbox"><span>Чистить следы после сбора</span></label>
+      </div>
+    </details>
+    <button class="pbtn primary" id="saveCfg2">Сохранить настройки</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-database">
+  <div class="panel-head"><h3>▤ База лидов</h3><button class="closex" data-close>✕</button></div>
+  <div class="panel-body">
+    <div class="dbstats" id="dbStats"></div>
+    <div class="phint">Скор 0–100 = «насколько этому бизнесу нужен сайт».
+      <b>hot</b> &gt;60 — нужен срочно (сайта нет / не открывается / не адаптивный).
+      <b>warm</b> 40–60 — нужен, но не горит. <b>cold</b> &lt;40 — у него уже всё хорошо
+      или это не клиент (сеть, конкурент-студия). Наведи на цифру в карточке — покажет, из чего сложился скор.</div>
+    <button class="pbtn" id="btnAnalyze">Проверить сайты базы <b id="c_unchecked_sites">—</b></button>
+    <div class="phint">Сайты уже собранных лидов, которые ещё не проверялись: открывается ли,
+      https, адаптив, скорость. Сначала — у кого есть телефон. Остановить — круглой кнопкой.</div>
+    <button class="pbtn" id="btnProbe">Проверить ключ 2ГИС <b>1 запрос</b></button>
+    <div class="fld">Экспорт текущей вкладки
+      <div class="prow" style="margin-top:6px">
+        <button class="pbtn" id="expJson">⬇ Экспорт JSON</button>
+        <button class="pbtn" id="expCsv">⬇ Экспорт CSV</button>
+      </div>
+    </div>
+    <div class="phint" id="exportNote">Выгрузка — только с согласия руководителя: он получит запрос и нажмёт
+      «Разрешить», файл скачается сам. Одно согласие — один файл.</div>
+    <div class="rail-sep"></div>
+    <div class="fld">Импорт своего JSON
+      <button class="pbtn" id="btnImport" style="margin-top:6px">⬆ Загрузить JSON-файл</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+    <div class="phint">Подойдёт файл-экспорт этого приложения или любой JSON-массив объектов с полями
+      <code>name, phone, website, city, address, industry, email, socials…</code>
+      (или обёртка <code>{"leads":[…]}</code>). Дубли склеиваются с базой, скор считается сам.</div>
+    <div class="rail-sep"></div>
+    <div class="phint hidden" id="serverDbNote">База и корзина общие и хранятся на сервере: из окна их не
+      стереть. Удалённого лида можно вернуть из корзины.</div>
+    <button class="pbtn" id="btnDemo">Загрузить демо-данные <b>14</b></button>
+    <button class="pbtn" id="btnPurge">Очистить корзину</button>
+    <button class="pbtn" id="btnCleanup">🧹 Очистить следы (защита ПК)</button>
+    <button class="pbtn danger" id="btnClear">Очистить всю базу</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-notifications">
+  <div class="panel-head"><h3>◔ Журнал / уведомления</h3><button class="closex" data-close>✕</button></div>
+  <div class="panel-body">
+    <button class="pbtn" id="btnClearLog">Очистить журнал</button>
+    <pre id="log" class="log"></pre>
+  </div>
+</section>
+
+<section class="panel" id="panel-lead">
+  <div class="panel-head"><h3 id="leadTitle">Карточка лида</h3><button class="closex" data-close>✕</button></div>
+  <div class="panel-body" id="leadDetail"></div>
+</section>
+
+<script src="/app.js"></script>
+<script src="/views.js"></script>
+</body>
+</html>
